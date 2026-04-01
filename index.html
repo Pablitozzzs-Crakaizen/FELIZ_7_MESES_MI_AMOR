@@ -14,39 +14,35 @@
       font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center;
     }
 
-    canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+    /* El canvas siempre al fondo pero detectable */
+    canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-    /* --- Texto Inicial (El que tenías antes) --- */
     .intro-text {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       color: #F5A3C8; font-size: 7vw; text-align: center; z-index: 30;
       text-shadow: 3px 3px #000; transition: opacity 1.5s ease;
-      width: 90%; pointer-events: none;
+      width: 90%; pointer-events: none; /* No estorba al clic */
     }
 
-    /* --- El Buzón (Oculto al inicio) --- */
     .mailbox {
-      position: absolute; font-size: 100px; cursor: pointer; z-index: 10;
+      position: absolute; font-size: 100px; cursor: pointer; z-index: 40;
       transition: all 0.5s ease; filter: drop-shadow(0 0 15px #ff4d6d);
-      opacity: 0; transform: scale(0); /* Escondido */
-      user-select: none;
+      opacity: 0; transform: scale(0); user-select: none;
     }
     .mailbox.visible { opacity: 1; transform: scale(1); animation: heartbeat 1.2s infinite; }
     @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
     .mailbox.open { opacity: 0; transform: scale(0) rotate(-45deg); pointer-events: none; }
 
-    /* --- La Carta --- */
     .letter-container {
       position: absolute; width: 92%; max-width: 420px; max-height: 85vh;
       background: #fdfcf0; border: 3px solid #edafb8; border-radius: 20px;
       padding: 18px; box-shadow: 0 10px 40px rgba(245, 163, 200, 0.5);
       opacity: 0; transform: scale(0) translateY(100px);
       transition: all 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      overflow-y: auto; z-index: 20;
+      overflow-y: auto; z-index: 50;
     }
     .letter-container.show { opacity: 1; transform: scale(1) translateY(0); }
 
-    /* --- Carrusel de 5 Fotos .jpeg --- */
     .carousel {
       width: 100%; height: 260px; position: relative;
       margin: 10px 0 20px 0; border-radius: 12px; overflow: hidden;
@@ -58,7 +54,6 @@
     }
     .carousel img.active { opacity: 1; }
 
-    /* --- Texto Romántico --- */
     .letter-content { font-family: 'Caveat', cursive; color: #333; line-height: 1.4; font-size: 22px; }
     .letter-title { font-size: 23px; color: #ff4d6d; text-align: center; margin-bottom: 12px; border-bottom: 2px dashed #edafb8; padding-bottom: 8px; }
     .letter-text { margin-bottom: 15px; white-space: pre-line; }
@@ -71,7 +66,7 @@
     .instruction.visible { opacity: 0.7; }
   </style>
 </head>
-<body onclick="skipIntro()">
+<body>
 
 <canvas id="canvas"></canvas>
 
@@ -83,7 +78,6 @@
 <div class="letter-container" id="letterContainer">
   <div class="letter-content">
     <div class="letter-title">FELIZ 7 MESES MI MORENITA 💗</div>
-
     <div class="carousel" id="photoCarousel">
       <img src="f1.jpeg" class="active" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+1'">
       <img src="f2.jpeg" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+2'">
@@ -91,23 +85,17 @@
       <img src="f4.jpeg" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+4'">
       <img src="f5.jpeg" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+5'">
     </div>
-    
-    <div class="letter-text">
-      Feliz 7 meses mi reina hermosha ya cumplimos 7 meses de novios y pues a por mas mi amor hemos luchado mucho estos 7 meses y quiero que tengamos metas quiero que mejoremos mutuamente cumplamos lo que deseamos y pues mas que tod que estemos juntos mi reina tu sabes que te Amo mushito 💗🥺 y que lo hare siempre mi amroshita eres mi tatuaje sin tinta que quien sabe se vuelve con tinta en algun momento mi amor quien sabe AJAJA pero como siempre me dices todo a su tiempo mi amorshita bueno quizas esto no sea mucho pero trate de hacerlo lo mejor posible mi amroshita quiero que sepas que te amo mushito mi amorshita y nunca lo olvides mi morenita hermosha siempre estara para ti cuando nadie estea para ti siempre que tus amigas te dejen de lado estare ahi yo mi amor siempre por mas que estemos peleados mal o motivos X siempre estare para ti sea por lo que sea siempre y cuando tu tambien desees pues mi amorshita y pues mi amorshita te amo mushitooo mushitooo mi reina hermoshaaa 🥺💗.
-      
-      FELIZ 7 MESES 💗🥺
-    </div>
-    
+    <div class="letter-text">Feliz 7 meses mi reina hermosha ya cumplimos 7 meses de novios... (tu texto aquí)... 🥺💗</div>
     <div class="letter-signature">Atte: Tu novio que te ama mucho, Elmer 🥺💗</div>
   </div>
 </div>
 
 <script>
-  // Lluvia de corazones (Canvas)
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   let width, height, columns, drops;
   const fontSize = 22;
+  const particles = [];
 
   function resize() {
     width = window.innerWidth; height = window.innerHeight;
@@ -118,46 +106,76 @@
   window.addEventListener('resize', resize);
   resize();
 
+  // EXPLOSIÓN DE CORAZONES (Tu idea original)
+  function createExplosion(x, y) {
+    for (let i = 0; i < 20; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 4 + 2;
+      particles.push({
+        x: x, y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        alpha: 1
+      });
+    }
+  }
+
+  // Detectar clic en el fondo
+  window.addEventListener('mousedown', (e) => {
+    createExplosion(e.clientX, e.clientY);
+    if (!introDone) showMailbox();
+  });
+
   function draw() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
     ctx.fillRect(0, 0, width, height);
+    
+    // Lluvia constante
     ctx.font = fontSize + 'px monospace';
     for (let i = 0; i < drops.length; i++) {
-      ctx.fillStyle = Math.random() > 0.5 ? '#ff4d6d' : '#f5a3c8';
+      ctx.fillStyle = '#ff4d6d';
       ctx.fillText('💗', i * fontSize, drops[i] * fontSize);
-      if (drops[i] * fontSize > height && Math.random() > 0.98) drops[i] = 0;
+      if (drops[i] * fontSize > height && Math.random() > 0.975) drops[i] = 0;
       drops[i]++;
     }
+
+    // Dibujar explosiones
+    particles.forEach((p, idx) => {
+      ctx.globalAlpha = p.alpha;
+      ctx.fillText('💗', p.x, p.y);
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05;
+      p.alpha -= 0.02;
+      if (p.alpha <= 0) particles.splice(idx, 1);
+    });
+    ctx.globalAlpha = 1;
     requestAnimationFrame(draw);
   }
   draw();
 
-  // Lógica de Tiempos
+  // Lógica de Tiempos y Buzón
   const introText = document.getElementById('introText');
   const mailbox = document.getElementById('mailbox');
   const instruction = document.getElementById('instruction');
   const letter = document.getElementById('letterContainer');
   let introDone = false;
 
-  // Función para pasar del texto al buzón
   function showMailbox() {
     if (introDone) return;
     introDone = true;
-    introText.style.opacity = '0'; // Desvanece el texto inicial
+    introText.style.opacity = '0';
     setTimeout(() => {
       introText.style.display = 'none';
-      mailbox.classList.add('visible'); // Aparece el buzón
-      instruction.classList.add('visible'); // Aparece la instrucción
-    }, 1500);
+      mailbox.classList.add('visible');
+      instruction.classList.add('visible');
+    }, 1000);
   }
 
-  // A los 6 segundos sale el buzón solo (o si ella hace click)
   setTimeout(showMailbox, 6000);
-  function skipIntro() { showMailbox(); }
 
-  // Abrir buzón -> Carta
   mailbox.onclick = (e) => {
-    e.stopPropagation(); // Evita que se active skipIntro
+    e.stopPropagation(); // IMPORTANTE: Para que no haga explosión justo debajo del buzón
     mailbox.classList.remove('visible');
     mailbox.classList.add('open');
     instruction.classList.remove('visible');
@@ -177,6 +195,5 @@
     }, 3000);
   }
 </script>
-
 </body>
 </html>
