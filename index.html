@@ -14,16 +14,23 @@
       font-family: 'Press Start 2P', cursive; display: flex; justify-content: center; align-items: center;
     }
 
-    /* El canvas siempre al fondo pero detectable */
     canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-    .intro-text {
+    /* --- Texto Inicial --- */
+    .intro-container {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      color: #F5A3C8; font-size: 7vw; text-align: center; z-index: 30;
-      text-shadow: 3px 3px #000; transition: opacity 1.5s ease;
-      width: 90%; pointer-events: none; /* No estorba al clic */
+      text-align: center; z-index: 30; width: 90%; transition: opacity 1.5s ease;
+      pointer-events: none;
     }
+    .intro-text {
+      color: #F5A3C8; font-size: 7vw; text-shadow: 3px 3px #000; margin-bottom: 20px;
+    }
+    .tap-instruction {
+      color: white; font-size: 10px; opacity: 0.6; animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
 
+    /* --- El Buzón --- */
     .mailbox {
       position: absolute; font-size: 100px; cursor: pointer; z-index: 40;
       transition: all 0.5s ease; filter: drop-shadow(0 0 15px #ff4d6d);
@@ -33,6 +40,7 @@
     @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
     .mailbox.open { opacity: 0; transform: scale(0) rotate(-45deg); pointer-events: none; }
 
+    /* --- La Carta --- */
     .letter-container {
       position: absolute; width: 92%; max-width: 420px; max-height: 85vh;
       background: #fdfcf0; border: 3px solid #edafb8; border-radius: 20px;
@@ -44,7 +52,7 @@
     .letter-container.show { opacity: 1; transform: scale(1) translateY(0); }
 
     .carousel {
-      width: 100%; height: 260px; position: relative;
+      width: 100%; height: 280px; position: relative;
       margin: 10px 0 20px 0; border-radius: 12px; overflow: hidden;
       border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
@@ -57,7 +65,7 @@
     .letter-content { font-family: 'Caveat', cursive; color: #333; line-height: 1.4; font-size: 22px; }
     .letter-title { font-size: 23px; color: #ff4d6d; text-align: center; margin-bottom: 12px; border-bottom: 2px dashed #edafb8; padding-bottom: 8px; }
     .letter-text { margin-bottom: 15px; white-space: pre-line; }
-    .letter-signature { text-align: right; font-size: 24px; color: #ff4d6d; margin-top: 10px; }
+    .letter-signature { text-align: right; font-size: 24px; color: #ff4d6d; margin-top: 10px; font-weight: bold; }
 
     .instruction { 
       position: fixed; bottom: 35px; color: white; font-size: 10px; 
@@ -70,7 +78,10 @@
 
 <canvas id="canvas"></canvas>
 
-<div class="intro-text" id="introText">FELIZ 7 MESES MI MORENITA HERMOSA💗🥺</div>
+<div class="intro-container" id="introContainer">
+  <div class="intro-text">FELIZ 7 MESES MI MORENITA HERMOSA💗🥺</div>
+  <div class="tap-instruction">(Toca la pantalla para continuar...)</div>
+</div>
 
 <div class="instruction" id="instruction">Ahora toca el buzón... 📬</div>
 <div class="mailbox" id="mailbox">📬</div>
@@ -79,11 +90,11 @@
   <div class="letter-content">
     <div class="letter-title">FELIZ 7 MESES MI MORENITA 💗</div>
     <div class="carousel" id="photoCarousel">
-      <img src="f1.jpeg" class="active" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+1'">
-      <img src="f2.jpeg" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+2'">
-      <img src="f3.jpeg" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+3'">
-      <img src="f4.jpeg" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+4'">
-      <img src="f5.jpeg" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+5'">
+      <img src="f1.jpeg" class="active">
+      <img src="f2.jpeg">
+      <img src="f3.jpeg">
+      <img src="f4.jpeg">
+      <img src="f5.jpeg">
     </div>
     <div class="letter-text">
       Feliz 7 meses mi reina hermosha ya cumplimos 7 meses de novios y pues a por mas mi amor hemos luchado mucho estos 7 meses y quiero que tengamos metas quiero que mejoremos mutuamente cumplamos lo que deseamos y pues mas que tod que estemos juntos mi reina tu sabes que te Amo mushito 💗🥺 y que lo hare siempre mi amroshita eres mi tatuaje sin tinta que quien sabe se vuelve con tinta en algun momento mi amor quien sabe AJAJA pero como siempre me dices todo a su tiempo mi amorshita bueno quizas esto no sea mucho pero trate de hacerlo lo mejor posible mi amroshita quiero que sepas que te amo mushito mi amorshita y nunca lo olvides mi morenita hermosha siempre estara para ti cuando nadie estea para ti siempre que tus amigas te dejen de lado estare ahi yo mi amor siempre por mas que estemos peleados mal o motivos X siempre estare para ti sea por lo que sea siempre y cuando tu tambien desees pues mi amorshita y pues mi amorshita te amo mushitooo mushitooo mi reina hermoshaaa 🥺💗.
@@ -110,31 +121,27 @@
   window.addEventListener('resize', resize);
   resize();
 
-  // EXPLOSIÓN DE CORAZONES (Tu idea original)
   function createExplosion(x, y) {
     for (let i = 0; i < 20; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * 4 + 2;
-      particles.push({
-        x: x, y: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        alpha: 1
-      });
+      particles.push({ x: x, y: y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, alpha: 1 });
     }
   }
 
-  // Detectar clic en el fondo
-  window.addEventListener('mousedown', (e) => {
-    createExplosion(e.clientX, e.clientY);
+  function handleInput(e) {
+    const x = e.clientX || (e.touches && e.touches[0].clientX);
+    const y = e.clientY || (e.touches && e.touches[0].clientY);
+    if(x && y) createExplosion(x, y);
     if (!introDone) showMailbox();
-  });
+  }
+
+  window.addEventListener('mousedown', handleInput);
+  window.addEventListener('touchstart', (e) => { handleInput(e); });
 
   function draw() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
     ctx.fillRect(0, 0, width, height);
-    
-    // Lluvia constante
     ctx.font = fontSize + 'px monospace';
     for (let i = 0; i < drops.length; i++) {
       ctx.fillStyle = '#ff4d6d';
@@ -142,15 +149,10 @@
       if (drops[i] * fontSize > height && Math.random() > 0.975) drops[i] = 0;
       drops[i]++;
     }
-
-    // Dibujar explosiones
     particles.forEach((p, idx) => {
       ctx.globalAlpha = p.alpha;
       ctx.fillText('💗', p.x, p.y);
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.05;
-      p.alpha -= 0.02;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.alpha -= 0.02;
       if (p.alpha <= 0) particles.splice(idx, 1);
     });
     ctx.globalAlpha = 1;
@@ -158,8 +160,7 @@
   }
   draw();
 
-  // Lógica de Tiempos y Buzón
-  const introText = document.getElementById('introText');
+  const introContainer = document.getElementById('introContainer');
   const mailbox = document.getElementById('mailbox');
   const instruction = document.getElementById('instruction');
   const letter = document.getElementById('letterContainer');
@@ -168,9 +169,9 @@
   function showMailbox() {
     if (introDone) return;
     introDone = true;
-    introText.style.opacity = '0';
+    introContainer.style.opacity = '0';
     setTimeout(() => {
-      introText.style.display = 'none';
+      introContainer.style.display = 'none';
       mailbox.classList.add('visible');
       instruction.classList.add('visible');
     }, 1000);
@@ -179,7 +180,7 @@
   setTimeout(showMailbox, 6000);
 
   mailbox.onclick = (e) => {
-    e.stopPropagation(); // IMPORTANTE: Para que no haga explosión justo debajo del buzón
+    e.stopPropagation();
     mailbox.classList.remove('visible');
     mailbox.classList.add('open');
     instruction.classList.remove('visible');
@@ -191,6 +192,7 @@
 
   function startCarousel() {
     const images = document.querySelectorAll('#photoCarousel img');
+    if(images.length === 0) return;
     let current = 0;
     setInterval(() => {
       images[current].classList.remove('active');
