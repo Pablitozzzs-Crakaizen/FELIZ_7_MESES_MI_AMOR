@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no"/>
-  <title>NUESTROS 7 MESES 💗</title>
+  <title>FELIZ 7 MESES 💗</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Caveat:wght@700&display=swap');
 
@@ -16,19 +16,28 @@
 
     canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 
-    /* --- El Buzón --- */
+    /* --- Texto Inicial (El que tenías antes) --- */
+    .intro-text {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      color: #F5A3C8; font-size: 7vw; text-align: center; z-index: 30;
+      text-shadow: 3px 3px #000; transition: opacity 1.5s ease;
+      width: 90%; pointer-events: none;
+    }
+
+    /* --- El Buzón (Oculto al inicio) --- */
     .mailbox {
       position: absolute; font-size: 100px; cursor: pointer; z-index: 10;
       transition: all 0.5s ease; filter: drop-shadow(0 0 15px #ff4d6d);
+      opacity: 0; transform: scale(0); /* Escondido */
       user-select: none;
     }
-    .mailbox.active { animation: heartbeat 1.2s infinite; }
+    .mailbox.visible { opacity: 1; transform: scale(1); animation: heartbeat 1.2s infinite; }
     @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
     .mailbox.open { opacity: 0; transform: scale(0) rotate(-45deg); pointer-events: none; }
 
     /* --- La Carta --- */
     .letter-container {
-      position: absolute; width: 92%; max-width: 420px; max-height: 88vh;
+      position: absolute; width: 92%; max-width: 420px; max-height: 85vh;
       background: #fdfcf0; border: 3px solid #edafb8; border-radius: 20px;
       padding: 18px; box-shadow: 0 10px 40px rgba(245, 163, 200, 0.5);
       opacity: 0; transform: scale(0) translateY(100px);
@@ -37,12 +46,11 @@
     }
     .letter-container.show { opacity: 1; transform: scale(1) translateY(0); }
 
-    /* --- Carrusel de 5 Fotos --- */
+    /* --- Carrusel de 5 Fotos .jpeg --- */
     .carousel {
       width: 100%; height: 260px; position: relative;
       margin: 10px 0 20px 0; border-radius: 12px; overflow: hidden;
       border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      background: #eee;
     }
     .carousel img {
       position: absolute; width: 100%; height: 100%; object-fit: cover;
@@ -52,22 +60,25 @@
 
     /* --- Texto Romántico --- */
     .letter-content { font-family: 'Caveat', cursive; color: #333; line-height: 1.4; font-size: 22px; }
-    .letter-title { 
-      font-size: 23px; color: #ff4d6d; text-align: center; margin-bottom: 12px; 
-      font-weight: bold; border-bottom: 2px dashed #edafb8; padding-bottom: 8px;
-    }
-    .letter-text { margin-bottom: 15px; white-space: pre-line; text-align: left; }
-    .letter-signature { text-align: right; font-size: 24px; color: #ff4d6d; font-weight: bold; margin-top: 10px; }
+    .letter-title { font-size: 23px; color: #ff4d6d; text-align: center; margin-bottom: 12px; border-bottom: 2px dashed #edafb8; padding-bottom: 8px; }
+    .letter-text { margin-bottom: 15px; white-space: pre-line; }
+    .letter-signature { text-align: right; font-size: 24px; color: #ff4d6d; margin-top: 10px; }
 
-    .instruction { position: fixed; bottom: 35px; color: white; font-size: 10px; opacity: 0.7; z-index: 5; text-align: center; width: 100%; }
+    .instruction { 
+      position: fixed; bottom: 35px; color: white; font-size: 10px; 
+      opacity: 0; transition: opacity 1s ease; z-index: 5; text-align: center; width: 100%; 
+    }
+    .instruction.visible { opacity: 0.7; }
   </style>
 </head>
-<body>
+<body onclick="skipIntro()">
 
 <canvas id="canvas"></canvas>
-<div class="instruction">Presiona el buzón, mi morenita... 📬</div>
 
-<div class="mailbox active" id="mailbox">📬</div>
+<div class="intro-text" id="introText">FELIZ 7 MESES MI MORENITA HERMOSA💗🥺</div>
+
+<div class="instruction" id="instruction">Ahora toca el buzón... 📬</div>
+<div class="mailbox" id="mailbox">📬</div>
 
 <div class="letter-container" id="letterContainer">
   <div class="letter-content">
@@ -87,18 +98,16 @@
       FELIZ 7 MESES 💗🥺
     </div>
     
-    <div class="letter-signature">
-      Atte: Tu novio que te ama mucho, Elmer 🥺💗
-    </div>
+    <div class="letter-signature">Atte: Tu novio que te ama mucho, Elmer 🥺💗</div>
   </div>
 </div>
 
 <script>
-  // Fondo de lluvia de corazones (Estilo Elmer)
+  // Lluvia de corazones (Canvas)
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   let width, height, columns, drops;
-  const fontSize = 20;
+  const fontSize = 22;
 
   function resize() {
     width = window.innerWidth; height = window.innerHeight;
@@ -116,33 +125,50 @@
     for (let i = 0; i < drops.length; i++) {
       ctx.fillStyle = Math.random() > 0.5 ? '#ff4d6d' : '#f5a3c8';
       ctx.fillText('💗', i * fontSize, drops[i] * fontSize);
-      if (drops[i] * fontSize > height && Math.random() > 0.985) drops[i] = 0;
+      if (drops[i] * fontSize > height && Math.random() > 0.98) drops[i] = 0;
       drops[i]++;
     }
     requestAnimationFrame(draw);
   }
   draw();
 
-  // Animación Abrir Buzón
+  // Lógica de Tiempos
+  const introText = document.getElementById('introText');
   const mailbox = document.getElementById('mailbox');
+  const instruction = document.getElementById('instruction');
   const letter = document.getElementById('letterContainer');
-  
-  function openBox() {
-    mailbox.classList.remove('active');
+  let introDone = false;
+
+  // Función para pasar del texto al buzón
+  function showMailbox() {
+    if (introDone) return;
+    introDone = true;
+    introText.style.opacity = '0'; // Desvanece el texto inicial
+    setTimeout(() => {
+      introText.style.display = 'none';
+      mailbox.classList.add('visible'); // Aparece el buzón
+      instruction.classList.add('visible'); // Aparece la instrucción
+    }, 1500);
+  }
+
+  // A los 6 segundos sale el buzón solo (o si ella hace click)
+  setTimeout(showMailbox, 6000);
+  function skipIntro() { showMailbox(); }
+
+  // Abrir buzón -> Carta
+  mailbox.onclick = (e) => {
+    e.stopPropagation(); // Evita que se active skipIntro
+    mailbox.classList.remove('visible');
     mailbox.classList.add('open');
+    instruction.classList.remove('visible');
     setTimeout(() => { 
       letter.classList.add('show'); 
       startCarousel();
-    }, 450);
-  }
-  
-  mailbox.onclick = openBox;
-  mailbox.ontouchstart = (e) => { e.preventDefault(); openBox(); };
+    }, 500);
+  };
 
-  // Control del Carrusel (3 segundos por foto)
   function startCarousel() {
     const images = document.querySelectorAll('#photoCarousel img');
-    if(images.length === 0) return;
     let current = 0;
     setInterval(() => {
       images[current].classList.remove('active');
